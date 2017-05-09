@@ -1,5 +1,5 @@
-import pygame as pg
-
+import pygame as pg #pygame is a free and open source external library for game development in python
+ 
 class CelestialBody(object):
 
     def __init__(self, position = None, size = None, velocity = None, acceleration = None, theta = None, mass = None):

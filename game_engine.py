@@ -1,4 +1,4 @@
-import pygame as pg
+import pygame as pg #pygame is a free and open source external library for game development in python
 
 from display import Display
 from spaceship import Spaceship
@@ -26,11 +26,8 @@ SHIP_MASS = 1000
 def __init_planet__():
     r = randint(50, 300)
     m = randint(10**6, 10**7)
-    print("planet Mass: " + str(m))
     x = randint(int((1/3) * screen.get_width()), int((2/3) * screen.get_width()))
-    print("x: " +str(x))
     y = randint(0, screen.get_height())
-    print("y: " + str(y))
     pos = [x, y]
     planet = Planet(position = pos, mass = m, radius = r)
     return planet
@@ -55,7 +52,6 @@ def touching_edge(spaceship, screen):
     elif(spaceship.get_position()[1] <= 0 and spaceship.get_velocity()[1] < 0):
         return True
     elif(spaceship.get_position()[1] >= screen.get_size()[1] and spaceship.get_velocity()[0] > 0):
-        print("touching bottom edge")
         return True
     else:
         return False
@@ -109,9 +105,6 @@ characteristics2 = {"thrust": False, "rotate_cw": False, "rotate_ccw": False, "f
 
 planet = __init_planet__()
 
-#print("spaceship1 mass: " + str(spaceship1.get_mass()))
-#print("spaceship2 mass: " + str(spaceship2.get_mass()))
-
 frame_counter = 0
 while 1:
     #GET INPUT
@@ -163,6 +156,7 @@ while 1:
 
     #UPDATE INFORMATION
 
+
     #f_g_1 = gravity(spaceship1, planet)
     #f_g_2 = gravity(spaceship2, planet)
 
@@ -203,17 +197,7 @@ while 1:
         if(frame_counter % 30 == 0):
             projectiles2.append(Projectile(list(spaceship2.get_vertices()[0]), [math.cos(spaceship2.get_angle()), math.sin(spaceship2.get_angle())], yellow))
         frame_counter += 1
-
-    #print("gravity on spaceship1: " + str(f_g_1))
-    #print("gravity on spaceship2: " + str(f_g_2))
-
-    '''print("initial 1 acceleration: " + str(spaceship1.get_acceleration()))
-    spaceship1.set_acceleration(spaceship1.get_acceleration()[0] + (f_g_1[0] / spaceship1.get_mass()), spaceship1.get_acceleration()[1] + (f_g_1[1] / spaceship1.get_mass()))
-    print("final 1 acceleration: " + str(spaceship1.get_acceleration()))
-
-    print("initial 2 acceleration: " + str(spaceship2.get_acceleration()))
-    spaceship2.set_acceleration(spaceship2.get_acceleration()[0] + (f_g_2[0] / spaceship2.get_mass()), spaceship2.get_acceleration()[1] + (f_g_2[1] / spaceship2.get_mass()))'''
-
+   
     projectiles1 = cleanup_projectiles(projectiles1, screen)
     projectiles2 = cleanup_projectiles(projectiles2, screen)
     
@@ -251,14 +235,10 @@ while 1:
     for p in projectiles2:
        p.draw(screen)
     spaceship2.draw(screen, yellow, width = 3)
-
-    #planet.draw(screen)
+    
+    #planet.draw()
     
     pg.display.flip()
-
-    #if(frame_counter % 30 == 0):
-    #    print("ship 1  acceleration: " + str(spaceship1.get_acceleration()))
-    #    print("ship 2  acceleration: " + str(spaceship2.get_acceleration()))
 
 
 while 1:

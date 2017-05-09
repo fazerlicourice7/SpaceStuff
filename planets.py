@@ -1,4 +1,4 @@
-import pygame as pg
+import pygame as pg #pygame is a free and open source external library for game development in python
 import math
 from spaceBodies import CelestialBody
 
