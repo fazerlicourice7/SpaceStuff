@@ -21,7 +21,7 @@ yellow = (255, 255, 0)
 
 THRUST_ACCEL = .0125 # pixel / frame^2
 SHIP_MASS = 1000
-PHI = ? #visibility of spaceship. how far either side of the orientation can the user see?
+#    PHI = ? #visibility of spaceship. how far either side of the orientation can the user see?
 
 
 def __init_planet__():
@@ -79,7 +79,7 @@ def touching_edge(spaceship, screen):
         return True
     elif(spaceship.get_position()[1] <= 0 and spaceship.get_velocity()[1] < 0):
         return True
-    elif(spaceship.get_position()[1] >= screen.get_size()[1] and spaceship.get_velocity()[0] > 0):
+    elif(spaceship.get_position()[1] >= screen.get_size()[1] and spaceship.get_velocity()[1] > 0):
         return True
     else:
         return False

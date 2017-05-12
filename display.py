@@ -4,12 +4,12 @@ class Display(object):
 
     def __init__(self):
         pg.init()
-        width = 1280
-        height = 650
+        width = 0
+        height = 0
 
         self.size = width, height
         
-        self.screen = pg.display.set_mode(self.size)
+        self.screen = pg.display.set_mode(self.size, pg.RESIZABLE)
         #self.screen.init()
 
     def get_screen(self):
