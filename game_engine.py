@@ -21,6 +21,7 @@ yellow = (255, 255, 0)
 
 THRUST_ACCEL = .0125 # pixel / frame^2
 SHIP_MASS = 1000
+PHI = ? #visibility of spaceship. how far either side of the orientation can the user see?
 
 
 def __init_planet__():
@@ -44,6 +45,33 @@ def __init_2__():
     angle = math.pi
     return Spaceship(position = pos, velocity = v, theta = angle, mass = SHIP_MASS)
 
+def is_object_visible(object1, object2): #where we are checking if the object1 can see object2
+    x = object2.get_position()[0] - object1.get_position()[0]
+    y = object1.get_position()[0] - object2.get_position()[0] #this difference is the other way since the axes are flipped on a display
+    temp_theta = math.atan(y/x)
+
+    #if temp_theta < 0:
+    #    if x < 0 and y > 0:
+    #        temp_theta += math.pi
+    #elif temp_theta > 0:
+    #    if x < 0 and y < 0:
+    #        temp_theta += math.pi
+
+    #the above if-else if ladder simplifies to this:
+    if x < 0:
+        temp_theta += math.pi
+
+    if (temp_theta < object1.get_angle() + PHI and temp_theta > object1.get_angle() - PHI):
+        return True
+
+def get_visible_objects(main_object, other_objects): #other_objects is a list of all the other objects in the arena
+    visible_objects = []
+    for obj in other_objects:
+        if is_object_visible(main_object, obj):
+            visible_objects.append(obj)
+    return visible_objects
+    
+            
 def touching_edge(spaceship, screen):
     if(spaceship.get_position()[0] <= 0 and spaceship.get_velocity()[0] < 0):
         return True
