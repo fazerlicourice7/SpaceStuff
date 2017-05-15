@@ -7,7 +7,7 @@ from planets import Planet
 
 import math
 from random import randint
-import sys
+import os, sys
 
 pg.init()
 pg.font.init()
@@ -180,7 +180,7 @@ while 1:
         spaceship1.set_acceleration(accelG1[0], accelG1[1])
     if(characteristics1["fire"]):
         if(frame_counter % 30 == 0):
-            if(spaceship2.get_ammo() > 0):
+            if(spaceship1.get_ammo() > 0):
                 projectiles1.append(Projectile(list(spaceship1.get_vertices()[0]), [math.cos(spaceship1.get_angle()), math.sin(spaceship1.get_angle())], white))
                 spaceship1.update_ammo(-1)
         frame_counter += 1
@@ -256,4 +256,8 @@ while 1:
             sys.exit()
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_F5:
-                os.execv(sys.executable, ['python'] + sys.argv)
+                #os.system('python game_engine.py')
+                os.execl(sys.executable, sys.executable, *sys.argv)
+                pg.display.quit()
+                pg.quit()
+                sys.exit()
