@@ -7,11 +7,16 @@ class Spaceship(CelestialBody):
     MAX_VELOCITY = 2  # pixel / frame
     COEFF_FRICTION = .009
     RATE_OF_ROT = math.pi/128
+    AMMO = 10
+    FUEL = 
+    
 
 
     def __init__(self, position = None, size = None, velocity = None, acceleration = None, theta = None, mass = None):
         super(Spaceship, self).__init__(position = position, size = size, velocity = velocity, acceleration = acceleration, theta = theta, mass = mass)
         self.health = 3
+        self.ammo = AMMO
+        self.fuel = FUEL
         self.update()
     
     def rotate(self, direction):
@@ -37,6 +42,12 @@ class Spaceship(CelestialBody):
 
     def get_health(self):
         return self.health
+
+    def get_ammo(self):
+        return self.ammo
+
+    def update_ammo(self, dAmmo):
+        self.ammo += dAmmo
 
     def calc_vertices(self):
         vertexA = (self.position[0] + int(40*math.cos(self.theta)), self.position[1] - int(40*math.sin(self.theta)))

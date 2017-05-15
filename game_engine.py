@@ -56,10 +56,11 @@ def touching_edge(spaceship, screen):
     else:
         return False
 
-def cleanup_projectiles(projectiles, screen):
+def cleanup_projectiles(projectiles, ship, screen):
     for p in projectiles:
         if touching_edge(p, screen):
             projectiles.remove(p)
+            ship.update_ammo(1)
 
     return projectiles
 
@@ -179,7 +180,9 @@ while 1:
         spaceship1.set_acceleration(accelG1[0], accelG1[1])
     if(characteristics1["fire"]):
         if(frame_counter % 30 == 0):
-            projectiles1.append(Projectile(list(spaceship1.get_vertices()[0]), [math.cos(spaceship1.get_angle()), math.sin(spaceship1.get_angle())], white))
+            if(spaceship2.get_ammo() > 0):
+                projectiles1.append(Projectile(list(spaceship1.get_vertices()[0]), [math.cos(spaceship1.get_angle()), math.sin(spaceship1.get_angle())], white))
+                spaceship1.update_ammo(-1)
         frame_counter += 1
 
 
@@ -195,11 +198,13 @@ while 1:
         spaceship2.set_acceleration(accelG2[0], accelG2[1])
     if(characteristics2["fire"]):
         if(frame_counter % 30 == 0):
-            projectiles2.append(Projectile(list(spaceship2.get_vertices()[0]), [math.cos(spaceship2.get_angle()), math.sin(spaceship2.get_angle())], yellow))
+            if(spaceship2.get_ammo() > 0):
+                projectiles2.append(Projectile(list(spaceship2.get_vertices()[0]), [math.cos(spaceship2.get_angle()), math.sin(spaceship2.get_angle())], yellow))
+                spaceship2.update_ammo(-1)
         frame_counter += 1
    
-    projectiles1 = cleanup_projectiles(projectiles1, screen)
-    projectiles2 = cleanup_projectiles(projectiles2, screen)
+    projectiles1 = cleanup_projectiles(projectiles1, spaceship1, screen)
+    projectiles2 = cleanup_projectiles(projectiles2, spaceship2, screen)
     
     if(touching_edge(spaceship1, screen)):
         spaceship1.set_velocity(0, 0)
@@ -209,11 +214,13 @@ while 1:
     for p in projectiles1:
         if(p.hit_ship(spaceship2)):
             projectiles1.remove(p)
+            spaceship1.update_ammo(1)
             spaceship2.update_health(-1)
 
     for p in projectiles2:
         if(p.hit_ship(spaceship1)):
             projectiles2.remove(p)
+            spaceship2.update_ammo(1)
             spaceship1.update_health(-1)
 
     if(spaceship1.get_health() <= 0 and spaceship2.get_health() <= 0):
