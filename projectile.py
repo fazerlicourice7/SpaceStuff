@@ -5,11 +5,11 @@ from spaceBodies import CelestialBody
 class Projectile(CelestialBody):
 
     LENGTH = 4
-    MULTIPLIER = 2 
+    MULTIPLIER = 2
+    MASS = 100 # FIGURE OUT OPTIMAL MASS
     
     def __init__(self, position, velocity, color):
-        self.position = position
-        self.velocity = (self.MULTIPLIER*velocity[0], -self.MULTIPLIER*velocity[1])
+        super(Projectile, self).__init__(position = position, velocity = (self.MULTIPLIER*velocity[0], -self.MULTIPLIER*velocity[1]), mass = self.MASS)
         self.color = color
 
     def update(self):
