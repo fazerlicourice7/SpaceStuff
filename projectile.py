@@ -9,7 +9,7 @@ class Projectile(CelestialBody):
     MASS = 100 # FIGURE OUT OPTIMAL MASS
     
     def __init__(self, position, velocity, color):
-        super(Projectile, self).__init__(position = position, size = size, velocity = (self.MULTIPLIER*velocity[0], -self.MULTIPLIER*velocity[1]), acceleration = acceleration, theta = theta, mass = MASS) 
+        super(Projectile, self).__init__(position = position, velocity = (self.MULTIPLIER*velocity[0], -self.MULTIPLIER*velocity[1]), mass = self.MASS)
         self.color = color
 
     def update(self):

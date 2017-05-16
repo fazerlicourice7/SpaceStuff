@@ -7,7 +7,7 @@ from planets import Planet
 
 import math
 from random import randint
-import sys
+import os, sys
 
 pg.init()
 pg.font.init()
@@ -56,10 +56,11 @@ def touching_edge(spaceship, screen):
     else:
         return False
 
-def cleanup_projectiles(projectiles, screen):
+def cleanup_projectiles(projectiles, ship, screen):
     for p in projectiles:
         if touching_edge(p, screen):
             projectiles.remove(p)
+            ship.update_ammo(1)
 
     return projectiles
 
@@ -97,11 +98,11 @@ def game_over(screen, winner): #if winner = 0 the game is a draw
     
 spaceship1 = __init_1__()
 projectiles1 = []
-characteristics1 = {"thrust": False, "rotate_cw": False, "rotate_ccw": False, "fire": False}
+characteristics1 = {"thrust": False, "rotate_cw": False, "rotate_ccw": False, "fire": False, "thrust_counter": 0, "recharge_counter": 0}
 
 spaceship2 = __init_2__()
 projectiles2 = []
-characteristics2 = {"thrust": False, "rotate_cw": False, "rotate_ccw": False, "fire": False}
+characteristics2 = {"thrust": False, "rotate_cw": False, "rotate_ccw": False, "fire": False, "thrust_counter": 0, "recharge_counter": 0}
 
 planet = __init_planet__()
 
@@ -168,38 +169,66 @@ while 1:
     accelG2 = [0,0]
 
     if(characteristics1["thrust"]):
-        xA = THRUST_ACCEL * math.cos(spaceship1.get_angle())
-        yA = THRUST_ACCEL * -math.sin(spaceship1.get_angle())
-        spaceship1.set_acceleration(accelG1[0] + xA, accelG1[1] + yA)
+        if(spaceship1.get_fuel() > 0):
+            characteristics1["recharge_counter"] = 0
+            xA = THRUST_ACCEL * math.cos(spaceship1.get_angle())
+            yA = THRUST_ACCEL * -math.sin(spaceship1.get_angle())
+            spaceship1.set_acceleration(accelG1[0] + xA, accelG1[1] + yA)
+            characteristics1["thrust_counter"] += 1
+        elif(spaceship1.get_fuel() == 0):
+            characteristics1["thrust"] = False
+        if(characteristics1["thrust_counter"] % 60 == 0):
+            spaceship1.update_fuel(-1)
     if(characteristics1["rotate_cw"]):
         spaceship1.rotate(-1)
     if(characteristics1["rotate_ccw"]):
         spaceship1.rotate(1)
     if(not characteristics1["thrust"]):
         spaceship1.set_acceleration(accelG1[0], accelG1[1])
+        characteristics1["thrust_counter"] = 0
+        characteristics1["recharge_counter"] += 1
+        if(characteristics1["recharge_counter"] % 60 == 0 and characteristics1["recharge_counter"] >= 240):
+            if(spaceship1.get_fuel() < 20):
+                spaceship1.update_fuel(1)
     if(characteristics1["fire"]):
         if(frame_counter % 30 == 0):
-            projectiles1.append(Projectile(list(spaceship1.get_vertices()[0]), [math.cos(spaceship1.get_angle()), math.sin(spaceship1.get_angle())], white))
+            if(spaceship1.get_ammo() > 0):
+                projectiles1.append(Projectile(list(spaceship1.get_vertices()[0]), [math.cos(spaceship1.get_angle()), math.sin(spaceship1.get_angle())], white))
+                spaceship1.update_ammo(-1)
         frame_counter += 1
 
 
     if(characteristics2["thrust"]):
-        xA = THRUST_ACCEL * math.cos(spaceship2.get_angle())
-        yA = THRUST_ACCEL * -math.sin(spaceship2.get_angle())
-        spaceship2.set_acceleration(accelG2[0] + xA, accelG2[1] + yA)
+        if(spaceship2.get_fuel() > 0):
+            characteristics2["recharge_counter"] = 0
+            xA = THRUST_ACCEL * math.cos(spaceship2.get_angle())
+            yA = THRUST_ACCEL * -math.sin(spaceship2.get_angle())
+            spaceship2.set_acceleration(accelG2[0] + xA, accelG2[1] + yA)
+            characteristics2["thrust_counter"] += 1
+        elif(spaceship2.get_fuel() == 0):
+            characteristics2["thrust"] = False
+        if(characteristics2["thrust_counter"] % 60 == 0):
+            spaceship2.update_fuel(-1)
     if(characteristics2["rotate_cw"]):
         spaceship2.rotate(-1)
     if(characteristics2["rotate_ccw"]):
         spaceship2.rotate(1)
     if(not characteristics2["thrust"]):
         spaceship2.set_acceleration(accelG2[0], accelG2[1])
+        characteristics2["thrust_counter"] = 0
+        characteristics2["recharge_counter"] += 1
+        if(characteristics2["recharge_counter"] % 60 == 0 and characteristics2["recharge_counter"] >= 240):
+            if(spaceship2.get_fuel() < 20):
+                spaceship2.update_fuel(1)
     if(characteristics2["fire"]):
         if(frame_counter % 30 == 0):
-            projectiles2.append(Projectile(list(spaceship2.get_vertices()[0]), [math.cos(spaceship2.get_angle()), math.sin(spaceship2.get_angle())], yellow))
+            if(spaceship2.get_ammo() > 0):
+                projectiles2.append(Projectile(list(spaceship2.get_vertices()[0]), [math.cos(spaceship2.get_angle()), math.sin(spaceship2.get_angle())], yellow))
+                spaceship2.update_ammo(-1)
         frame_counter += 1
    
-    projectiles1 = cleanup_projectiles(projectiles1, screen)
-    projectiles2 = cleanup_projectiles(projectiles2, screen)
+    projectiles1 = cleanup_projectiles(projectiles1, spaceship1, screen)
+    projectiles2 = cleanup_projectiles(projectiles2, spaceship2, screen)
     
     if(touching_edge(spaceship1, screen)):
         spaceship1.set_velocity(0, 0)
@@ -209,12 +238,30 @@ while 1:
     for p in projectiles1:
         if(p.hit_ship(spaceship2)):
             projectiles1.remove(p)
+            spaceship1.update_ammo(1)
             spaceship2.update_health(-1)
 
     for p in projectiles2:
         if(p.hit_ship(spaceship1)):
             projectiles2.remove(p)
+            spaceship2.update_ammo(1)
             spaceship1.update_health(-1)
+
+    #UPDATE SCREEN
+    screen.fill(black) #black(rgb)  = 0,0,0
+    for p in projectiles1:
+        p.draw(screen)
+    spaceship1.draw(screen, white, width = 3)
+    spaceship1.draw_stats(screen, (0,0), white, multiplier = 1)
+
+    for p in projectiles2:
+       p.draw(screen)
+    spaceship2.draw(screen, yellow, width = 3)
+    spaceship2.draw_stats(screen, (screen.get_width(), 0), yellow, multiplier = -1)
+    
+    #planet.draw()
+    
+    pg.display.flip()
 
     if(spaceship1.get_health() <= 0 and spaceship2.get_health() <= 0):
         game_over(screen, 0)
@@ -226,21 +273,6 @@ while 1:
         game_over(screen, 1)
         break
 
-    #UPDATE SCREEN
-    screen.fill(black) #black(rgb)  = 0,0,0
-    for p in projectiles1:
-        p.draw(screen)
-    spaceship1.draw(screen, white, width = 3)
-
-    for p in projectiles2:
-       p.draw(screen)
-    spaceship2.draw(screen, yellow, width = 3)
-    
-    #planet.draw()
-    
-    pg.display.flip()
-
-
 while 1:
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -249,4 +281,7 @@ while 1:
             sys.exit()
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_F5:
-                os.execv(sys.executable, ['python'] + sys.argv)
+                os.execl(sys.executable, sys.executable, *sys.argv)
+                pg.display.quit()
+                pg.quit()
+                sys.exit()
