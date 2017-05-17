@@ -29,12 +29,6 @@ class Spaceship(CelestialBody):
     def set_velocity(self, xVel, yVel): # used only for initialization (0,0)
         self.velocity = [xVel, -1*yVel]
 
-    def set_acceleration(self, xA, yA):
-        self.acceleration = [xA, yA]
-
-    def get_acceleration(self):
-        return self.acceleration
-
     def set_health(self, health):
         self.health = health
 
