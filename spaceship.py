@@ -19,6 +19,7 @@ class Spaceship(CelestialBody):
         self.ammo = self.AMMO
         self.fuel = self.FUEL
         self.update()
+        self.calc_vertices()
     
     def rotate(self, direction):
         self.theta += (direction)*(self.RATE_OF_ROT)

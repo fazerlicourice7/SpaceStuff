@@ -1,12 +1,13 @@
 import pygame as pg #pygame is a free and open source external library for game development in python
 
+from asteroid import Asteroid
 from display import Display
 from spaceship import Spaceship
 from projectile import Projectile
 from planets import Planet
 
 import math
-from random import randint
+from random import randint, uniform
 import os, sys
 
 pg.init()
@@ -32,6 +33,14 @@ def __init_planet__():
     planet = Planet(position = pos, mass = m, radius = r)
     return planet
 
+def __init_asteroid__():
+    size = randint(1,3)
+    x = randint(0, screen.get_width())
+    y = randint(0, screen.get_height())
+    Vx = uniform(0,2)
+    Vy = uniform(0,2)
+    return Asteroid(position = [x,y], size = size, velocity = [Vx, Vy])
+
 def __init_1__():
     pos = [screen.get_width() / 6, screen.get_height() / 2]
     v = [0, 0]
@@ -44,21 +53,21 @@ def __init_2__():
     angle = math.pi
     return Spaceship(position = pos, velocity = v, theta = angle, mass = SHIP_MASS)
 
-def touching_edge(spaceship, screen):
-    if(spaceship.get_position()[0] <= 0 and spaceship.get_velocity()[0] < 0):
-        return True
-    elif(spaceship.get_position()[0] >= screen.get_size()[0] and spaceship.get_velocity()[0] > 0):
-        return True
-    elif(spaceship.get_position()[1] <= 0 and spaceship.get_velocity()[1] < 0):
-        return True
-    elif(spaceship.get_position()[1] >= screen.get_size()[1] and spaceship.get_velocity()[0] > 0):
-        return True
+def touching_edge(obj, screen):
+    if(obj.get_position()[0] <= 0 and obj.get_velocity()[0] < 0):
+        return 1
+    elif(obj.get_position()[0] >= screen.get_width() and obj.get_velocity()[0] > 0):
+        return 2
+    elif(obj.get_position()[1] <= 0 and obj.get_velocity()[1] < 0):
+        return 3
+    elif(obj.get_position()[1] >= screen.get_height() and obj.get_velocity()[1] > 0):
+        return 4
     else:
-        return False
+        return -1
 
 def cleanup_projectiles(projectiles, ship, screen):
     for p in projectiles:
-        if touching_edge(p, screen):
+        if touching_edge(p, screen) != -1:
             projectiles.remove(p)
             ship.update_ammo(1)
 
@@ -106,6 +115,11 @@ characteristics2 = {"thrust": False, "rotate_cw": False, "rotate_ccw": False, "f
 
 planet = __init_planet__()
 
+asteroids = []
+i = 0
+for i in range(randint(1,7)):
+    asteroids.append(__init_asteroid__())
+
 frame_counter = 0
 while 1:
     #GET INPUT
@@ -116,6 +130,12 @@ while 1:
             sys.exit()
 
         elif event.type == pg.KEYDOWN:
+            if event.key == pg.K_F5:
+                os.execl(sys.executable, sys.executable, *sys.argv)
+                pg.display.quit()
+                pg.quit()
+                sys.exit()
+
             if event.key == pg.K_w:
                 characteristics1["thrust"] = True
             elif event.key == pg.K_d:
@@ -131,7 +151,7 @@ while 1:
                 characteristics2["rotate_cw"] = True
             elif event.key == pg.K_LEFT:
                 characteristics2["rotate_ccw"] = True
-            if event.key == pg.K_RCTRL:
+            if event.key == pg.K_DOWN:
                 characteristics2["fire"] = True
 
         elif event.type == pg.KEYUP:
@@ -150,7 +170,7 @@ while 1:
                 characteristics2["rotate_cw"] = False
             elif event.key == pg.K_LEFT:
                 characteristics2["rotate_ccw"] = False
-            if event.key == pg.K_RCTRL:
+            if event.key == pg.K_DOWN:
                 characteristics2["fire"] = False
 
 
@@ -229,12 +249,40 @@ while 1:
    
     projectiles1 = cleanup_projectiles(projectiles1, spaceship1, screen)
     projectiles2 = cleanup_projectiles(projectiles2, spaceship2, screen)
-    
-    if(touching_edge(spaceship1, screen)):
+
+    touch_edge = touching_edge(spaceship1, screen)
+    if(touch_edge != -1):
+        pos = spaceship1.get_position()
+        vel = spaceship1.get_velocity()
+        if(touch_edge == 1 or touch_edge == 2):
+            spaceship1.set_position([pos[0] + (-1 * vel[0] / math.fabs(vel[0])) * 5 * math.hypot(vel[0], vel[1]), pos[1]])
+        elif(touch_edge == 3 or touch_edge == 4):
+            spaceship1.set_position([pos[0], pos[1] + (-1 * vel[1] / math.fabs(vel[1])) * 5 * math.hypot(vel[0], vel[1])])
         spaceship1.set_velocity(0, 0)
-    if(touching_edge(spaceship2, screen)):
+
+    touch_edge = touching_edge(spaceship2, screen)
+    if(touch_edge != -1):
+        pos = spaceship2.get_position()
+        vel = spaceship2.get_velocity()
+        if(touch_edge == 1 or touch_edge == 2):
+            spaceship2.set_position([pos[0] + (-1 * vel[0] / math.fabs(vel[0])) * 5 * math.hypot(vel[0], vel[1]), pos[1]])
+        elif(touch_edge == 3 or touch_edge == 4):
+            spaceship2.set_position([pos[0], pos[1] + (-1 * vel[1] / math.fabs(vel[1])) * 5 * math.hypot(vel[0], vel[1])])
         spaceship2.set_velocity(0, 0)
 
+    for a in asteroids:
+        touch_edge = touching_edge(a, screen)
+        if(touch_edge != -1):
+            if(touch_edge == 1 or touch_edge == 2):
+                vel = a.get_velocity()
+                pos = a.get_position()
+                a.set_position([pos[0] + (-1 * vel[0] / math.fabs(vel[0])) * 5 * math.hypot(vel[0], vel[1]), pos[1]])
+                a.set_velocity(-1 * vel[0], vel[1])
+            elif(touch_edge == 3 or touch_edge == 4):
+                vel = a.get_velocity()
+                pos = a.get_position()
+                a.set_position([pos[0], pos[1] + (-1 * vel[1] / math.fabs(vel[1])) * 5 * math.hypot(vel[0], vel[1])])
+                a.set_velocity(vel[0], -1 * vel[1])
     for p in projectiles1:
         if(p.hit_ship(spaceship2)):
             projectiles1.remove(p)
@@ -258,7 +306,9 @@ while 1:
        p.draw(screen)
     spaceship2.draw(screen, yellow, width = 3)
     spaceship2.draw_stats(screen, (screen.get_width(), 0), yellow, multiplier = -1)
-    
+
+    for a in asteroids:
+        a.draw(screen)
     #planet.draw()
     
     pg.display.flip()
