@@ -16,8 +16,8 @@ class Projectile(CelestialBody):
         self.position[0] += self.velocity[0]
         self.position[1] += self.velocity[1]
 
-    def hit_ship(self, ship):
-        vertices = ship.get_vertices()
+    def hit_obj(self, obj):
+        vertices = obj.get_vertices()
         xVertices = []
         yVertices = []
         for v in vertices:
