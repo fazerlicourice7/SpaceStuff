@@ -13,9 +13,9 @@ class Asteroid(CelestialBody):
         self.vertices_info = []
         i = 0
         for i in range(self.num_vertices):
-            vertex = {"theta": 0, "dist": 0}
-            vertex["theta"] = r.uniform(0, math.pi * 2)
+            vertex = { "dist": 0, "theta": 0}
             vertex["dist"] = r.randint(15, 20) * size
+            vertex["theta"] = r.uniform(0, math.pi * 2)
             self.vertices_info.append(vertex)
 
         self.vertices_info = sorted(self.vertices_info, key=itemgetter("theta")) 
@@ -33,6 +33,31 @@ class Asteroid(CelestialBody):
             vertex = (pos[0] + temp_dist * math.cos(temp_theta), pos[1] + temp_dist * math.sin(temp_theta))
             vertices.append(vertex)
         return vertices
+
+    def get_vertices(self):
+        return self.vertices
+
+    def hit_obj(self, obj):
+        rects = []
+        for a in [self, obj]:
+            vertices = a.get_vertices()
+            xVertices = []
+            yVertices = []
+            for v in vertices:
+                xVertices.append(v[0])
+                yVertices.append(v[1])
+            left = min(xVertices)
+            top = min(yVertices)
+            bottom = max(yVertices)
+            right = max(xVertices)
+            width = math.fabs(left - right)
+            height = math.fabs(top - bottom)
+            objRect = pg.Rect(left, top, width, height)
+            rects.append(objRect)
+            
+        if(rects[0].colliderect(rects[1])):
+            return True
+        return False
 
     def _update(self):
         self.velocity[0] += self.acceleration[0]
