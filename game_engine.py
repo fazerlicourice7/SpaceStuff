@@ -21,17 +21,17 @@ white = (255, 255, 255)
 yellow = (255, 255, 0)
 
 THRUST_ACCEL = .0125 # pixel / frame^2
-SHIP_MASS = 1000
 
 
 def __init_planet__():
-    r = randint(50, 300)
-    m = randint(10**6, 10**7)
+    r = randint(30, 150)
+    m = randint(3 * 10**5, 3 * 10**6)
     x = randint(int((1/3) * screen.get_width()), int((2/3) * screen.get_width()))
-    y = randint(0, screen.get_height())
+    #y = randint(int(screen.get_height() / 4), int(3 * screen.get_height() / 4))
+    #x = randint(0, screen.get_width())
+    y = randint(int(screen.get_height() / 4), screen.get_height())
     pos = [x, y]
-    planet = Planet(position = pos, mass = m, radius = r)
-    return planet
+    return Planet(position = pos, mass = m, radius = r)
 
 def __init_asteroid__():
     size = randint(1,3)
@@ -45,13 +45,13 @@ def __init_1__():
     pos = [screen.get_width() / 6, screen.get_height() / 2]
     v = [0, 0]
     angle = 0
-    return Spaceship(position = pos, velocity = v, theta = angle, mass = SHIP_MASS)
+    return Spaceship(position = pos, velocity = v, theta = angle)
 
 def __init_2__():
     pos = [5 * screen.get_width() / 6, screen.get_height() / 2]
     v = [0, 0]
     angle = math.pi
-    return Spaceship(position = pos, velocity = v, theta = angle, mass = SHIP_MASS)
+    return Spaceship(position = pos, velocity = v, theta = angle)
 
 def touching_edge(obj, screen):
     if(obj.get_position()[0] <= 0 and obj.get_velocity()[0] < 0):
@@ -122,15 +122,31 @@ def split_up_asteroid(asteroid): # size3 -> 2 size2; size2 -> 3 size1
         return asteroids2
     return None
 
+def getXDirectionTowards(shipC, planetP):
+    if(shipC.get_position()[0] < planetP.get_position()[0]):
+        return 1
+    elif(shipC.get_position()[0] > planetP.get_position()[0]):
+        return -1
+    else:
+        return 0
+
+def getYDirectionTowards(shipC, planetP):
+    if(shipC.get_position()[1] < planetP.get_position()[1]):
+        return 1
+    elif(shipC.get_position()[1] > planetP.get_position()[1]):
+        return -1
+    else:
+        return 0
+
 def gravity(object1, object2): #calculates the force and direction on object1.
-    G = 6.672867 * math.pow(10, -11)
-    xDist = object2.get_position()[0] - object1.get_position()[0]
-    yDist = object2.get_position()[1] - object1.get_position()[1]
-    gX = G * object1.get_mass() * object2.get_mass() / (xDist ** 2)
-    gY = G * object1.get_mass() * object2.get_mass() / (yDist ** 2)
-    xDir = xDist / math.fabs(xDist)
-    yDir = yDist / math.fabs(yDist)
-    return [xDir * gX, yDir * gY]
+    G = 6.672867 * math.pow(10, -5)
+    xDist = abs(object2.get_position()[0] - object1.get_position()[0])
+    yDist = abs(object2.get_position()[1] - object1.get_position()[1])
+    g = G * object1.get_mass() * object2.get_mass() / ((xDist ** 2) + (yDist ** 2))
+    angle = math.atan(yDist /xDist)
+    gX = g * math.cos(angle)
+    gY = g * math.sin(angle)
+    return [getXDirectionTowards(object1, object2) * gX, getYDirectionTowards(object1, object2) * gY]
 
 def game_over(screen, winner): #if winner = 0 the game is a draw
     red = (255, 0, 0)
@@ -162,7 +178,10 @@ spaceship2 = __init_2__()
 projectiles2 = []
 characteristics2 = {"thrust": False, "rotate_cw": False, "rotate_ccw": False, "fire": False, "thrust_counter": 0, "recharge_counter": 0}
 
-planet = __init_planet__()
+
+planets = []
+#for i in range(0, 3):
+planets.append(__init_planet__())
 
 asteroids = []
 i = 0
@@ -225,17 +244,32 @@ while 1:
 
 
     #UPDATE INFORMATION
+    accelG1 = [0, 0]
+    accelG2 = [0, 0]
+    for planet in planets:
+        f_g_1 = gravity(spaceship1, planet)
+        f_g_2 = gravity(spaceship2, planet)
+    
+        accelG1[0] += f_g_1[0] / spaceship1.get_mass()
+        accelG1[1] += f_g_1[1] / spaceship1.get_mass()
+        
+        accelG2[0] += f_g_2[0] / spaceship2.get_mass()
+        accelG2[1] += f_g_2[1] / spaceship2.get_mass()
 
+        for a in asteroids:
+            accelG = [grav / a.get_mass() for grav in gravity(a, planet)]
+            a.set_acceleration(accelG[0], accelG[1])
 
-    #f_g_1 = gravity(spaceship1, planet)
-    #f_g_2 = gravity(spaceship2, planet)
+        for p in projectiles1:
+            accelG = [grav / p.get_mass() for grav in gravity(p, planet)]
+            p.set_acceleration(accelG[0], accelG[1])
 
-    #accelG1 = [f_g_1[0] / spaceship1.get_mass(), f_g_1[1] / spaceship1.get_mass()]
-    #accelG2 = [f_g_2[0] / spaceship2.get_mass(), f_g_2[1] / spaceship2.get_mass()]
-    #accelG1 = f_g_1
-    #accelG2 = f_g_2
-    accelG1 = [0,0]
-    accelG2 = [0,0]
+        for p in projectiles2:
+            accelG = [grav / p.get_mass() for grav in gravity(p, planet)]
+            p.set_acceleration(accelG[0], accelG[1])
+
+    #print("ship1 position: " + str(spaceship1.get_position()) +"; accelG: " + str(accelG1) + "; vel: " + str(spaceship1.get_velocity()))
+    #print("ship2 position: " + str(spaceship2.get_position()) +"; accelG: " + str(accelG2) + "; vel: " + str(spaceship2.get_velocity()))
 
     if(characteristics1["thrust"]):
         if(spaceship1.get_fuel() > 0):
@@ -377,6 +411,45 @@ while 1:
             #a.set_velocity(-1 * vel[0], -1 * vel[1])
             asteroids.remove(a)
 
+    for planet in planets:
+        position = planet.get_position()
+        pos1 = spaceship1.get_position()
+        pos2 = spaceship2.get_position()
+        dist1 = math.hypot(pos1[0] - position[0], pos1[1] - position[1])
+        dist2 = math.hypot(pos2[0] - position[0], pos2[1] - position[1])
+
+        if(dist1 <= planet.get_radius()): #planet-spaceship collision
+            health = spaceship1.get_health() - 1
+            spaceship1 = __init_1__()
+            spaceship1.set_health(health)
+        if(dist2 <= planet.get_radius()):
+            health = spaceship2.get_health() - 1
+            spaceship2 = __init_2__()
+            spaceship2.set_health(health)
+
+        for p in projectiles1:
+            pos = p.get_position()
+            dist = math.hypot(pos[0] - position[0], pos[1] - position[1])
+            if(dist <= planet.get_radius()): #planet-projectile collision
+                projectiles1.remove(p)
+                spaceship1.update_ammo(1)
+
+        for p in projectiles2:
+            pos = p.get_position()
+            dist = math.hypot(pos[0] - position[0], pos[1] - position[1])
+            if(dist <= planet.get_radius()): #planet-projectile collision
+                projectiles2.remove(p)
+                spaceship2.update_ammo(1)
+
+        for a in asteroids:
+            for vertex in a.get_vertices():
+                dist = math.hypot(vertex[0] - position[0], vertex[1] - position[1])
+                if(dist <= planet.get_radius()):
+                    temp_asteroids = split_up_asteroid(a)
+                    asteroids.remove(a)
+                    if (temp_asteroids != None):
+                        asteroids += temp_asteroids
+                    break
 
     #UPDATE SCREEN
     screen.fill(black) #black(rgb)  = 0,0,0
@@ -392,7 +465,9 @@ while 1:
 
     for a in asteroids:
         a.draw(screen)
-    #planet.draw()
+
+    for planet in planets:
+        planet.draw(screen)
     
     pg.display.flip()
 

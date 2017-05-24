@@ -16,5 +16,8 @@ class Planet(CelestialBody):
                 return True
         return False
 
+    def get_radius(self):
+        return self.radius
+
     def draw(self, screen):
         pg.draw.circle(screen, self.green, self.position, self.radius)

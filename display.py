@@ -9,7 +9,7 @@ class Display(object):
 
         self.size = width, height
         
-        self.screen = pg.display.set_mode(self.size)
+        self.screen = pg.display.set_mode((0,0), pg.FULLSCREEN)
         #self.screen.init()
 
     def get_screen(self):

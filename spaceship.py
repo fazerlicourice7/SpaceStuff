@@ -10,11 +10,13 @@ class Spaceship(CelestialBody):
     AMMO = 10
     FUEL = 20
     HEALTH = 5
+    MASS = 1000
     red = (255, 0, 0)
     blue = (0, 0, 255)
     
+    
     def __init__(self, position = None, size = None, velocity = None, acceleration = None, theta = None, mass = None):
-        super(Spaceship, self).__init__(position = position, size = size, velocity = velocity, acceleration = acceleration, theta = theta, mass = mass)
+        super(Spaceship, self).__init__(position = position, size = size, velocity = velocity, acceleration = acceleration, theta = theta, mass = self.MASS)
         self.health = self.HEALTH
         self.ammo = self.AMMO
         self.fuel = self.FUEL
